@@ -54,27 +54,39 @@ fn main() {
         println!("\n{}", todolist);
 
         // input
-        println!("\nEnter a command:\n - add (a)\n - remove (r)\n - toggle (t)\n - exit+save (e)");
+        println!(
+            "\nEnter a command:\n - add (a)\n - remove (r)\n - toggle (t)\n - change priority (p)\n - sort priority (sp)\n - sort newest first (sn)\n - sort oldest first (so)\n - exit+save (e)"
+        );
         let command = get_terminal_input();
 
         // match
         match command.trim().to_lowercase().as_str() {
-            "add" | "a" => {
+            "a" => {
                 println!("Enter a task:");
                 let task = get_terminal_input();
                 todolist.add(task.trim());
             }
-            "remove" | "r" => {
+            "r" => {
                 println!("Enter the index:");
                 let index = get_terminal_input();
                 todolist.remove(index.trim().parse().unwrap_or(usize::MAX));
             }
-            "toggle" | "t" => {
+            "t" => {
                 println!("Enter the index:");
                 let index = get_terminal_input();
                 todolist.toggle(index.trim().parse().unwrap_or(usize::MAX));
             }
-            "exit" | "e" => {
+            "p" => {
+                println!("Enter the index:");
+                let index = get_terminal_input().trim().parse().unwrap_or(usize::MAX);
+                println!("Enter the new priority:");
+                let newp = get_terminal_input().trim().parse().unwrap_or(usize::MAX);
+                todolist.change_priority(index, newp);
+            }
+            "sp" => todolist.sort_priority(),
+            "sn" => todolist.sort_newest(),
+            "so" => todolist.sort_oldest(),
+            "e" => {
                 if let Err(e) = todolist.save_todo(&file_path) {
                     println!("Failed to save todos: {}", e);
                 } else {

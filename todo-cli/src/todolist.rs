@@ -30,6 +30,10 @@ impl Todo {
         self.done = !self.done;
         self.last_mod_time = Local::now().to_string();
     }
+
+    fn change_priority(&mut self, newp: usize) {
+        self.priority = newp;
+    }
 }
 
 #[derive(Serialize, Deserialize)]
@@ -57,10 +61,33 @@ impl TodoList {
 
     pub fn toggle(&mut self, index: usize) {
         if index < self.list.len() {
-            self.list[index].toggle()
+            self.list[index].toggle();
         } else {
-            println!("Invalid Index.")
+            println!("Invalid Index.");
         }
+    }
+
+    pub fn change_priority(&mut self, index: usize, newp: usize) {
+        if index < self.list.len() {
+            self.list[index].change_priority(newp);
+        } else {
+            println!("Invalid Index.");
+        }
+    }
+
+    pub fn sort_priority(&mut self) {
+        self.list.sort_by(|t1, t2| t2.priority.cmp(&t1.priority))
+    }
+
+    pub fn sort_newest(&mut self) {
+        self.list
+            .sort_by(|t1, t2| t2.last_mod_time.cmp(&t1.last_mod_time))
+    }
+
+    pub fn sort_oldest(&mut self) {
+        self.list
+            .sort_by(|t1, t2| t2.last_mod_time.cmp(&t1.last_mod_time));
+        self.list.reverse()
     }
 
     pub fn save_todo(&self, path: &PathBuf) -> std::io::Result<()> {
