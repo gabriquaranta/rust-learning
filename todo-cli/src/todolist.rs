@@ -22,13 +22,16 @@ impl Todo {
             task: text.to_string(),
             done: false,
             last_mod_time: Local::now().to_string(),
-            priority: 0,
+            priority: 1,
         }
     }
 
     fn toggle(&mut self) {
         self.done = !self.done;
         self.last_mod_time = Local::now().to_string();
+        if self.done {
+            self.change_priority(0)
+        }
     }
 
     fn change_priority(&mut self, newp: usize) {
