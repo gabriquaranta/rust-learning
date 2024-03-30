@@ -1,9 +1,14 @@
 extern crate colored;
 
 use colored::Colorize;
+use serde::{Deserialize, Serialize};
 use std::fmt;
+use std::fs::File;
 use std::io;
+use std::io::{Read, Write};
+use std::path::PathBuf;
 
+#[derive(Serialize, Deserialize)]
 struct Todo {
     task: String,
     done: bool,
@@ -32,6 +37,7 @@ impl fmt::Display for Todo {
     }
 }
 
+#[derive(Serialize, Deserialize)]
 struct TodoList {
     list: Vec<Todo>,
 }
@@ -61,6 +67,21 @@ impl TodoList {
             println!("Invalid Index.")
         }
     }
+
+    fn save_todo(&self, path: &PathBuf) -> std::io::Result<()> {
+        let mut file = File::create(path)?;
+        let json_data = serde_json::to_string(&self.list)?;
+        file.write_all(json_data.as_bytes())?;
+        Ok(())
+    }
+
+    fn load_todo(&mut self, path: &PathBuf) -> std::io::Result<()> {
+        let mut file = File::open(path)?;
+        let mut json_data = String::new();
+        file.read_to_string(&mut json_data)?;
+        self.list = serde_json::from_str(&json_data)?;
+        Ok(())
+    }
 }
 
 impl fmt::Display for TodoList {
@@ -80,14 +101,45 @@ impl fmt::Display for TodoList {
 
 fn main() {
     let mut todolist = TodoList::new();
+    let file_path = PathBuf::from("todos/todos.json");
 
+    print!("\x1B[2J\x1B[1;1H"); // clear the screen and put the cursor at first row & first col of the screen.
+    println!("{}", String::from(" - TODO APP - ").blue().bold());
+
+    // new or load
+    loop {
+        println!("\nEnter a command:\n - load (l)\n - new (n)");
+        let mut command = String::new();
+        io::stdin()
+            .read_line(&mut command)
+            .expect("Failed to read command");
+
+        match command.trim().to_lowercase().as_str() {
+            "load" | "l" => {
+                if let Err(e) = todolist.load_todo(&file_path) {
+                    println!("Failed to load todos: {}", e);
+                } else {
+                    println!("Todos loaded from file");
+                }
+                break;
+            }
+            "new" | "n" => {
+                break;
+            }
+            _ => {
+                println!("not valid")
+            }
+        }
+    }
+
+    // use
     loop {
         print!("\x1B[2J\x1B[1;1H"); // clear the screen and put the cursor at first row & first col of the screen.
         println!("{}", String::from(" - TODO APP - ").blue().bold());
         println!("\n{}", todolist);
 
         // input
-        println!("\nEnter a command (add/remove/toggle/show/exit):");
+        println!("\nEnter a command:\n - add (a)\n - remove (r)\n - toggle (t)\n - exit+save (e)");
         let mut command = String::new();
         io::stdin()
             .read_line(&mut command)
@@ -95,25 +147,30 @@ fn main() {
 
         // match
         match command.trim().to_lowercase().as_str() {
-            "add" => {
+            "add" | "a" => {
                 println!("Enter a task:");
                 let mut task = String::new();
                 io::stdin().read_line(&mut task).expect("Failed to add");
                 todolist.add(task.trim());
             }
-            "remove" => {
+            "remove" | "r" => {
                 println!("Enter the index:");
                 let mut index = String::new();
                 io::stdin().read_line(&mut index).expect("Failed to remove");
                 todolist.remove(index.trim().parse().unwrap_or(usize::MAX));
             }
-            "toggle" => {
+            "toggle" | "t" => {
                 println!("Enter the index:");
                 let mut index = String::new();
                 io::stdin().read_line(&mut index).expect("Failed to remove");
                 todolist.toggle(index.trim().parse().unwrap_or(usize::MAX));
             }
-            "exit" => {
+            "exit" | "e" => {
+                if let Err(e) = todolist.save_todo(&file_path) {
+                    println!("Failed to save todos: {}", e);
+                } else {
+                    println!("Todos saved to file");
+                }
                 print!("\x1B[2J\x1B[1;1H");
                 break;
             }
