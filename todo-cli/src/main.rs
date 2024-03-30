@@ -99,6 +99,14 @@ impl fmt::Display for TodoList {
     }
 }
 
+fn get_terminal_input() -> String {
+    let mut input = String::new();
+    io::stdin()
+        .read_line(&mut input)
+        .expect("Failed to read command");
+    return input;
+}
+
 fn main() {
     let mut todolist = TodoList::new();
     let file_path = PathBuf::from("todos/todos.json");
@@ -108,11 +116,8 @@ fn main() {
 
     // new or load
     loop {
-        println!("\nEnter a command:\n - load (l)\n - new (n)");
-        let mut command = String::new();
-        io::stdin()
-            .read_line(&mut command)
-            .expect("Failed to read command");
+        println!("\nEnter a command:\n - load (l)\n - new (n) !will overwrite!");
+        let command = get_terminal_input();
 
         match command.trim().to_lowercase().as_str() {
             "load" | "l" => {
@@ -134,35 +139,31 @@ fn main() {
 
     // use
     loop {
-        print!("\x1B[2J\x1B[1;1H"); // clear the screen and put the cursor at first row & first col of the screen.
+        print!("\x1B[2J\x1B[1;1H");
+        // clear the screen and put the cursor at first row & first col of the terminal
+
         println!("{}", String::from(" - TODO APP - ").blue().bold());
         println!("\n{}", todolist);
 
         // input
         println!("\nEnter a command:\n - add (a)\n - remove (r)\n - toggle (t)\n - exit+save (e)");
-        let mut command = String::new();
-        io::stdin()
-            .read_line(&mut command)
-            .expect("Failed to read command");
+        let command = get_terminal_input();
 
         // match
         match command.trim().to_lowercase().as_str() {
             "add" | "a" => {
                 println!("Enter a task:");
-                let mut task = String::new();
-                io::stdin().read_line(&mut task).expect("Failed to add");
+                let task = get_terminal_input();
                 todolist.add(task.trim());
             }
             "remove" | "r" => {
                 println!("Enter the index:");
-                let mut index = String::new();
-                io::stdin().read_line(&mut index).expect("Failed to remove");
+                let index = get_terminal_input();
                 todolist.remove(index.trim().parse().unwrap_or(usize::MAX));
             }
             "toggle" | "t" => {
                 println!("Enter the index:");
-                let mut index = String::new();
-                io::stdin().read_line(&mut index).expect("Failed to remove");
+                let index = get_terminal_input();
                 todolist.toggle(index.trim().parse().unwrap_or(usize::MAX));
             }
             "exit" | "e" => {
