@@ -30,7 +30,7 @@ impl Todo {
         self.done = !self.done;
         self.last_mod_time = Local::now().to_string();
         if self.done {
-            self.change_priority(0)
+            self.change_priority(0);
         }
     }
 
