@@ -1,3 +1,4 @@
 .DS_Store
 .vscode
 todo-cli/src/todos/**.json
+!todo-cli/src/todos/example.json
